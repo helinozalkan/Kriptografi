@@ -481,7 +481,7 @@ body.dark .report-footer { border-top-color: #444; }
 }
 
 .crack-result-card {
-    background-color: #f8f9fa;
+    background-color: #28a745;
     border: 1px solid #dee2e6;
     border-left: 4px solid #6c757d; /* Varsayılan renk */
     border-radius: 8px;
@@ -556,7 +556,7 @@ body.dark .report-footer { border-top-color: #444; }
 
 /* --- Daraltılabilir Bölüm Stilleri --- */
 .collapsible-toggle {
-    background-color: #f1f1f1;
+    background-color: #28a745;
     border: 1px solid #ccc;
     padding: 12px 15px;
     width: 100%;
