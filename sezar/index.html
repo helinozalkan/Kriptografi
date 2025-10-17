@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sezar Şifreleme Uygulaması</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Bilişim Kriptografi Uygulaması</h1>
+        <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
+    </header>
+
+    <nav class="tabs">
+        <button data-tab="encrypt" class="active">Şifreleme</button>
+        <button data-tab="decrypt">De-Şifreleme</button>
+        <button data-tab="crack">Şifre Kırma</button>
+    </nav>
+
+    <main>
+        <section id="encrypt" class="content-section tab active">
+            <h2>Şifreleme</h2>
+            <div class="input-group">
+                <label for="alphabetEncrypt">Alfabe:</label>
+                <select id="alphabetEncrypt" class="alphabet-select">
+                    <option value="tr">Türkçe (TR)</option>
+                    <option value="en">İngilizce (EN)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="plainInput">Düz Metin:</label>
+                <textarea id="plainInput" rows="4" placeholder="Şifrelenecek metni buraya girin..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="keyEncrypt">Şifreleme Anahtarı:</label>
+                <input type="number" id="keyEncrypt" min="1" max="29" value="3">
+            </div>
+            <button id="btnEncrypt">Şifrele</button>
+            <div class="output-group">
+                <label for="cipherOutput">Şifreli Metin:</label>
+                <textarea id="cipherOutput" rows="4" readonly placeholder="Şifreli metin burada görünecektir."></textarea>
+            </div>
+        </section>
+
+        <section id="decrypt" class="content-section tab">
+            <h2>De-Şifreleme</h2>
+            <div class="input-group">
+                <label for="alphabetDecrypt">Alfabe:</label>
+                <select id="alphabetDecrypt" class="alphabet-select">
+                    <option value="tr">Türkçe (TR)</option>
+                    <option value="en">İngilizce (EN)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="cipherInput">Şifreli Metin:</label>
+                <textarea id="cipherInput" rows="4" placeholder="De-şifrelenecek metni buraya girin..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="keyDecrypt">Şifreleme Anahtarı:</label>
+                <input type="number" id="keyDecrypt" min="1" max="29" value="3">
+            </div>
+            <button id="btnDecrypt">De-Şifrele</button>
+            <div class="output-group">
+                <label for="plainOutput">Düz Metin:</label>
+                <textarea id="plainOutput" rows="4" readonly placeholder="Düz metin burada görünecektir."></textarea>
+            </div>
+        </section>
+
+        <section id="crack" class="content-section tab">
+            <h2>Şifre Kırma (Frekans Analizi)</h2>
+            <div class="input-group">
+                <label for="crackInput">Şifreli Metin:</label>
+                <textarea id="crackInput" rows="4" placeholder="Kırılacak şifreli metni buraya girin..."></textarea>
+            </div>
+            <button id="btnCrack">Şifreyi Kır</button>
+            <div class="output-group">
+                <div id="freqList" class="info-text">Frekans analizi sonuçları burada görünecek.</div>
+                <div id="crackCandidates" class="candidates-container">Olası çözümler burada listelenecek.</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="reportModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <button id="closeReportBtn" class="modal-close">&times;</button>
+        <div class="report-header">
+            <img src="logo1.png" alt="Üniversite Logosu" class="report-logo">
+            <h2>Kriptografik Analiz Raporu</h2>
+        </div>
+        <div class="report-body">
+            <p><strong>Analiz Tarihi:</strong> <span id="reportDate"></span></p>
+            <p><strong>Uygulanan Yöntem:</strong> <span id="reportMethod"></span></p>
+            <hr>
+            <h3>Analiz Edilen Metin</h3>
+            <textarea id="reportCiphertext" class="report-textarea" rows="3" readonly></textarea>
+            
+            <h3>Metin Özellikleri</h3>
+            <p>
+                <strong>Toplam Karakter Sayısı:</strong> <span id="reportTotalChars"></span> | 
+                <strong>Toplam Harf Sayısı:</strong> <span id="reportLetterChars"></span>
+            </p>
+
+            <h3>Harf Frekans Dağılımı</h3>
+            <div id="reportFreqTable" class="freq-table"></div>
+            
+            
+            <hr>
+            
+<h3>Frekans Tabanlı Öneriler</h3>
+<div id="reportSuggestions" class="report-results-list">
+    </div>
+
+<h3>Tüm Olasılıklar (Brute-force)</h3>
+<div id="reportBruteForce" class="report-results-list">
+    </div>
+
+        </div>
+        <div class="report-footer">
+            <button id="printReportBtn" class="report-print-btn">Raporu Yazdır</button>
+        </div>
+    </div>
+</div>
+
+    <script src="sezar.js"></script>
+</body>
+</html>

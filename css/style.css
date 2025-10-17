@@ -722,3 +722,23 @@ body.dark .result-card .decoded {
     border-color: #555;
     color: #f0f0f0;
 }
+/* --- Hata Mesajı Stilleri (YENİ EKLENDİ) --- */
+.error-message {
+    color: #dc3545; /* Canlı bir kırmızı */
+    font-size: 0.875em;
+    font-weight: 500;
+    margin-top: 5px;
+    display: none; /* Varsayılan olarak gizli */
+}
+.error-message.visible {
+    display: block; /* Görünür yapmak için */
+}
+input.invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.25) !important;
+}
+
+
+/* --- Daraltılabilir Bölüm Stilleri --- */
+.collapsible-toggle {
+    background-color: #f8f9fa; /* Nötr, açık gri arkaplan */
