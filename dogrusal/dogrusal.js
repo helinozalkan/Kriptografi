@@ -32,13 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- DOĞRUSAL ŞİFRELEME MANTIĞI ---
+    // --- DOĞRUSAL ŞİFRELEME MANTIĞI (ÖRNEK KOD İLE BİRLEŞTİRİLDİ) ---
 
     const alfabetler = {
         tr: ['a','b','c','ç','d','e','f','g','ğ','h','ı','i','j','k','l','m','n','o','ö','p','r','s','ş','t','u','ü','v','y','z'],
         en: ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
     };
 
+    // === Yardımcı Matematiksel Fonksiyonlar ===
     function obeb(a, b) {
         while (b) { [a, b] = [b, a % b]; }
         return a;
@@ -51,44 +52,37 @@ document.addEventListener('DOMContentLoaded', () => {
         return 1;
     }
 
+    // === Ana Şifreleme/Deşifreleme Fonksiyonu ===
     function processText(text, a, b, alfabe, mode = 'encrypt') {
         const M = alfabe.length;
         const a_inv = modInverse(a, M);
         return Array.from(text).map(char => {
-            // Ödev tanımına uygun olarak sadece harfleri işleme al, diğerlerini atla.
             const lower = char.toLocaleLowerCase('tr-TR');
             const idx = alfabe.indexOf(lower);
-            if (idx === -1) return ''; // Harf değilse boş string döndür
+            if (idx === -1) return char; // Sadece harfleri işle, diğerlerini atla
             let newIndex;
             if (mode === 'encrypt') {
                 newIndex = (a * idx + b) % M;
             } else {
                 newIndex = (a_inv * ((idx - b + M) % M)) % M;
             }
-            const out = alfabe[newIndex];
-            // Büyük/küçük harf dönüşümü istenirse bu kısım kullanılabilir, şimdilik istenmiyor.
-            // const isUpperCase = char !== lower;
-            // return isUpperCase ? out.toLocaleUpperCase('tr-TR') : out;
-            return out;
+            return alfabe[newIndex];
         }).join('');
     }
     
+    // === Diğer Yardımcı Fonksiyonlar ===
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
   
     function copyToClipboard(text) {
-        try {
-            navigator.clipboard.writeText(text);
-        } catch {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-        }
+        navigator.clipboard.writeText(text).then(() => {}, () => {
+             const ta = document.createElement('textarea');
+             ta.value = text; document.body.appendChild(ta);
+             ta.select(); document.execCommand('copy');
+             document.body.removeChild(ta);
+        });
     }
 
     // === Hata Yönetimi ve Anahtar Kontrolü ===
@@ -97,8 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const mode = alphabet_element.value;
         const M = alfabetler[mode].length;
 
-        if (obeb(keyA, M) !== 1) {
-            error_element.textContent = `'a' anahtarı (${keyA}), alfabe boyutu (${M}) ile aralarında asal olmalıdır.`;
+        if (keyA <= 0 || obeb(keyA, M) !== 1) {
+            error_element.textContent = `'a' anahtarı (${keyA}), alfabe boyutu (${M}) ile aralarında asal ve pozitif olmalıdır.`;
             error_element.classList.add('visible');
             keyA_element.classList.add('invalid');
             return false;
@@ -123,23 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
     [keyA_decrypt, decryptSelect].forEach(el => el.addEventListener('input', () => validateKeyA(keyA_decrypt, decryptSelect, error_decrypt)));
 
     // localStorage
-    if (encryptSelect) {
-        const saved = localStorage.getItem('alphabetEncryptLinear');
-        if (saved) encryptSelect.value = saved;
-        encryptSelect.addEventListener('change', e => localStorage.setItem('alphabetEncryptLinear', e.target.value));
-    }
-    if (decryptSelect) {
-        const saved = localStorage.getItem('alphabetDecryptLinear');
-        if (saved) decryptSelect.value = saved;
-        decryptSelect.addEventListener('change', e => localStorage.setItem('alphabetDecryptLinear', e.target.value));
-    }
-     if (crackSelect) {
-        const saved = localStorage.getItem('alphabetCrackLinear');
-        if (saved) crackSelect.value = saved;
-        crackSelect.addEventListener('change', e => localStorage.setItem('alphabetCrackLinear', e.target.value));
-    }
+    const setupSelect = (selectElement, storageKey) => {
+        if (selectElement) {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) selectElement.value = saved;
+            selectElement.addEventListener('change', e => localStorage.setItem(storageKey, e.target.value));
+        }
+    };
+    setupSelect(encryptSelect, 'alphabetEncryptLinear');
+    setupSelect(decryptSelect, 'alphabetDecryptLinear');
+    setupSelect(crackSelect, 'alphabetCrackLinear');
 
-    // Şifreleme
+    // Şifreleme Butonu
     document.getElementById('btnEncrypt').addEventListener('click', () => {
         if (!validateKeyA(keyA_encrypt, encryptSelect, error_encrypt)) return;
 
@@ -147,15 +136,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const keyA = parseInt(keyA_encrypt.value) || 0;
         const keyB = parseInt(document.getElementById('keyB_encrypt').value) || 0;
         const mode = encryptSelect.value;
-        const alfabe = alfabetler[mode];
-
+        
         if (!plain) { alert('Lütfen düz metin giriniz.'); return; }
         
-        const cipher = processText(plain, keyA, keyB, alfabe, 'encrypt');
+        const cipher = processText(plain, keyA, keyB, alfabetler[mode], 'encrypt');
         document.getElementById('cipherOutput').value = cipher;
     });
 
-    // Deşifreleme
+    // Deşifreleme Butonu
     document.getElementById('btnDecrypt').addEventListener('click', () => {
         if (!validateKeyA(keyA_decrypt, decryptSelect, error_decrypt)) return;
 
@@ -163,15 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const keyA = parseInt(keyA_decrypt.value) || 0;
         const keyB = parseInt(document.getElementById('keyB_decrypt').value) || 0;
         const mode = decryptSelect.value;
-        const alfabe = alfabetler[mode];
 
         if (!cipher) { alert('Lütfen şifreli metin giriniz.'); return; }
 
-        const plain = processText(cipher, keyA, keyB, alfabe, 'decrypt');
+        const plain = processText(cipher, keyA, keyB, alfabetler[mode], 'decrypt');
         document.getElementById('plainOutput').value = plain;
     });
 
-    // Şifre Kırma
+    // Şifre Kırma Butonu
     document.getElementById('btnCrack').addEventListener('click', () => {
         const cipher = document.getElementById('crackInput').value;
         if (!cipher) { alert('Lütfen kırılacak şifreli metni giriniz.'); return; }
@@ -192,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const a of valid_a_values) {
             for (let b = 0; b < M; b++) {
                 const cand = processText(cipher, a, b, alfabe, 'decrypt');
-                
                 candidatesHTML += `<div class="crack-result-card"><div class="card-header"><span class="result-key-badge">(a=${a}, b=${b})</span></div><div class="result-text">${escapeHtml(cand)}</div><div class="result-actions"><button class="useCandidateBtn" data-a="${a}" data-b="${b}" data-mode="${mode}">Kullan</button><button class="copyCandidateBtn" data-text="${encodeURIComponent(cand)}">Kopyala</button></div></div>`;
             }
         }
@@ -200,42 +186,36 @@ document.addEventListener('DOMContentLoaded', () => {
     
         document.querySelectorAll('.useCandidateBtn').forEach(b => {
             b.addEventListener('click', () => {
-                const keyA = parseInt(b.dataset.a);
-                const keyB = parseInt(b.dataset.b);
-                const crackMode = b.dataset.mode;
-                applyCandidateToDecryptTab(cipher, keyA, keyB, crackMode);
+                applyCandidateToDecryptTab(cipher, parseInt(b.dataset.a), parseInt(b.dataset.b), b.dataset.mode);
             });
         });
     
         document.querySelectorAll('.copyCandidateBtn').forEach(b => {
-            b.addEventListener('click', () => {
+            b.addEventListener('click', (e) => {
                 const text = decodeURIComponent(b.dataset.text);
                 copyToClipboard(text);
-                b.textContent = 'Kopyalandı';
-                setTimeout(() => b.textContent = 'Kopyala', 1200);
+                e.target.textContent = 'Kopyalandı';
+                setTimeout(() => e.target.textContent = 'Kopyala', 1200);
             });
         });
     });
 
+    // "Kullan" Butonu Yardımcı Fonksiyonu
     function applyCandidateToDecryptTab(cipherText, keyA, keyB, mode) {
-        const cipherInput = document.getElementById('cipherInput');
         const keyAInput = document.getElementById('keyA_decrypt');
         const keyBInput = document.getElementById('keyB_decrypt');
-        const plainOutput = document.getElementById('plainOutput');
         
         if (decryptSelect) decryptSelect.value = mode;
-        if (cipherInput) cipherInput.value = cipherText;
+        document.getElementById('cipherInput').value = cipherText;
         if (keyAInput) keyAInput.value = keyA;
-        if (keyBInput) keyAInput.value = keyB;
+        if (keyBInput) keyBInput.value = keyB;
         
         validateKeyA(keyAInput, decryptSelect, document.getElementById('keyA_decrypt_error'));
         
         switchToTab('decrypt');
     
-        const alfabe = alfabetler[mode];
-        if (plainOutput) {
-            plainOutput.value = processText(cipherText, keyA, keyB, alfabe, 'decrypt');
-        }
+        const plain = processText(cipherText, keyA, keyB, alfabetler[mode], 'decrypt');
+        document.getElementById('plainOutput').value = plain;
     }
 });
 

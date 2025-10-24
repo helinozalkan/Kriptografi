@@ -9,17 +9,23 @@
 <body>
     <div class="container">
         <header>
+            <!-- Not: Logonun doğru görünmesi için dosya yapısını aşağıda anlatıldığı gibi düzenleyin. -->
+            <img src="./sezar/logo1.png" alt="Üniversite Logosu" class="main-logo">
             <h1>Kriptografi Algoritmaları</h1>
-            <p>Lütfen incelemek istediğiniz şifreleme yöntemini seçin.</p>
+            <p>Lütfen devam etmek için bir şifreleme yöntemi seçiniz.</p>
         </header>
         <main class="choice-container">
-            <a href="./sezar/sezar.html" class="algorithm-choice">
-                <h2>Sezar Şifreleme</h2>
-                <p>Uygulama Ödevi 1</p>
+            <a href="./sezar/sezar.html" class="algorithm-card">
+                <div class="card-content">
+                    <h2>Sezar Şifreleme</h2>
+                    <p>Harfleri belirli bir anahtara göre kaydırmaya dayalı klasik bir şifreleme tekniği.</p>
+                </div>
             </a>
-            <a href="./dogrusal/dogrusal.html" class="algorithm-choice disabled">
-                <h2>Doğrusal Şifreleme</h2>
-                <p>Uygulama Ödevi 2</p>
+            <a href="./dogrusal/dogrusal.html" class="algorithm-card">
+                <div class="card-content">
+                    <h2>Doğrusal Şifreleme</h2>
+                    <p>Her harfi <code>(ax + b) mod M</code> formülünü kullanarak başka bir harfle eşleyen daha karmaşık bir yöntem.</p>
+                </div>
             </a>
         </main>
     </div>
