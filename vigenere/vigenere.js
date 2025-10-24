@@ -32,20 +32,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- VIGENERE ŞİFRELEME MANTIĞI ---
+    
 
     const alfabetler = {
         tr: ['a','b','c','ç','d','e','f','g','ğ','h','ı','i','j','k','l','m','n','o','ö','p','r','s','ş','t','u','ü','v','y','z'],
         en: ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
     };
 
-    // === Yardımcı Fonksiyonlar ===
+    
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // Anahtar kelimenin sadece harflerden oluşup oluşmadığını kontrol eder
+
     function validateKeyword(keyword_element, error_element, alfabe) {
         const keyword = keyword_element.value.toLocaleLowerCase('tr-TR');
         let isValid = true;
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === Ana Vigenere Şifreleme/Deşifreleme Fonksiyonu ===
+   
     function processVigenere(text, keyword, alfabe, mode = 'encrypt') {
         const M = alfabe.length;
         let result = '';
@@ -82,31 +82,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const textCharLower = text[i].toLocaleLowerCase('tr-TR');
             const textCharIndex = alfabe.indexOf(textCharLower);
 
-            // Eğer karakter alfabede yoksa (boşluk, noktalama vs.), olduğu gibi bırak (Ödevde atlanabilir deniyor)
+            
             if (textCharIndex === -1) {
-                // result += text[i]; // Karakteri korumak isterseniz
-                continue; // Karakteri atla (Ödev tanımına daha uygun)
+                
+                continue; 
             }
 
-            // Anahtar kelimedeki sıradaki harfi al (döngüsel olarak)
+   
             const keywordCharLower = keyword[keywordIndex % keyword.length].toLocaleLowerCase('tr-TR');
             const keywordCharIndex = alfabe.indexOf(keywordCharLower);
 
             let newIndex;
             if (mode === 'encrypt') {
                 newIndex = (textCharIndex + keywordCharIndex) % M;
-            } else { // decrypt
+            } else { 
                 newIndex = (textCharIndex - keywordCharIndex + M) % M;
             }
 
             result += alfabe[newIndex];
-            keywordIndex++; // Sadece alfabe karakterleri için anahtar indeksini ilerlet
+            keywordIndex++; 
         }
         return result;
     }
 
-    // === Kasiski Testi Fonksiyonları ===
-    // Tekrarlayan dizileri ve aralarındaki mesafeleri bulur
+
     function findRepeatedSequences(text, minLength = 3) {
         const sequences = {};
         for (let len = minLength; len <= Math.floor(text.length / 2); len++) {
@@ -119,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        // Sadece 1'den fazla geçen dizileri al
+    
         const repeated = {};
         for (const seq in sequences) {
             if (sequences[seq].length > 1) {
@@ -129,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return repeated;
     }
 
-    // İki sayı arasındaki mesafeyi hesaplar
+   
     function getDistances(positions) {
         const distances = [];
         for (let i = 0; i < positions.length - 1; i++) {
@@ -138,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return distances;
     }
 
-    // Bir sayının bölenlerini bulur
+    
     function getFactors(num) {
         const factors = new Set();
         for (let i = 2; i <= Math.sqrt(num); i++) {
@@ -147,13 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 factors.add(num / i);
             }
         }
-        factors.add(num); // Sayının kendisini de ekle
+        factors.add(num); 
         return Array.from(factors).sort((a, b) => a - b);
     }
 
-    // Kasiski testini uygular
+   
     function kasiskiExamination(text, maxKeyLength) {
-        text = text.toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, ''); // Sadece harfleri al
+        text = text.toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, ''); 
         const repeatedSequences = findRepeatedSequences(text);
         const allDistances = [];
         let resultsText = "Tekrarlayan Diziler ve Mesafeler:\n";
@@ -189,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let maxCount = 0;
         resultsText += "\nEn Çok Tekrar Eden Bölenler (Muhtemel Anahtar Uzunlukları):\n";
         resultsText += "--------------------------------------------------------\n";
-        // Bölenleri sayısına göre sırala
+       
         const sortedFactors = Object.entries(factorCounts).sort(([, countA], [, countB]) => countB - countA);
 
         sortedFactors.forEach(([factor, count]) => {
@@ -204,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // === Olay Dinleyicileri ===
+  
     const encryptSelect = document.getElementById('alphabetEncrypt');
     const decryptSelect = document.getElementById('alphabetDecrypt');
     const keylengthSelect = document.getElementById('alphabetKeylength');
@@ -214,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorEncrypt = document.getElementById('keywordEncryptError');
     const errorDecrypt = document.getElementById('keywordDecryptError');
 
-    // Alfabe seçimlerini localStorage'a kaydet/yükle
+  
     const setupSelect = (selectElement, storageKey) => {
         if (selectElement) {
             const saved = localStorage.getItem(storageKey);
@@ -224,13 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     setupSelect(encryptSelect, 'alphabetVigenere');
     setupSelect(decryptSelect, 'alphabetVigenere');
-    setupSelect(keylengthSelect, 'alphabetVigenere'); // Aynı anahtarı kullanabiliriz
+    setupSelect(keylengthSelect, 'alphabetVigenere'); 
 
-    // Gerçek zamanlı anahtar kelime kontrolü
     [keywordEncrypt, encryptSelect].forEach(el => el.addEventListener('input', () => validateKeyword(keywordEncrypt, errorEncrypt, alfabetler[encryptSelect.value])));
     [keywordDecrypt, decryptSelect].forEach(el => el.addEventListener('input', () => validateKeyword(keywordDecrypt, errorDecrypt, alfabetler[decryptSelect.value])));
 
-    // Şifreleme Butonu
     document.getElementById('btnEncrypt').addEventListener('click', () => {
         const mode = encryptSelect.value;
         const alfabe = alfabetler[mode];
@@ -245,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('cipherOutputEncrypt').value = cipher;
     });
 
-    // Deşifreleme Butonu
+
     document.getElementById('btnDecrypt').addEventListener('click', () => {
         const mode = decryptSelect.value;
         const alfabe = alfabetler[mode];
@@ -260,7 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('plainOutputDecrypt').value = plain;
     });
 
-    // Anahtar Uzunluğu Bulma Butonu
     document.getElementById('btnFindKeyLength').addEventListener('click', () => {
         const cipher = document.getElementById('keylengthInput').value;
         const maxKeyLen = parseInt(document.getElementById('maxKeyLength').value);
