@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vigenere Şifreleme Uygulaması</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Vigenere Şifreleme Algoritması</h1>
+        <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
+    </header>
+
+    <nav class="tabs">
+        <button data-tab="encrypt" class="active">Şifreleme</button>
+        <button data-tab="decrypt">De-Şifreleme</button>
+        <button data-tab="keylength">Anahtar Uzunluğu</button>
+    </nav>
+
+    <main>
+        <section id="encrypt" class="content-section tab active">
+            <h2>Şifreleme</h2>
+            <div class="input-group">
+                <label for="alphabetEncrypt">Alfabe:</label>
+                <select id="alphabetEncrypt" class="alphabet-select">
+                    <option value="tr">Türkçe (TR)</option>
+                    <option value="en">İngilizce (EN)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="plainInputEncrypt">Düz Metin:</label>
+                <textarea id="plainInputEncrypt" rows="4" placeholder="Şifrelenecek metni buraya girin..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="keywordEncrypt">Anahtar Kelime:</label>
+                <input type="text" id="keywordEncrypt" placeholder="Sadece harf giriniz...">
+                <p class="error-message" id="keywordEncryptError"></p>
+            </div>
+            <button id="btnEncrypt">Şifrele</button>
+            <div class="output-group">
+                <label for="cipherOutputEncrypt">Şifreli Metin:</label>
+                <textarea id="cipherOutputEncrypt" rows="4" readonly placeholder="Şifreli metin burada görünecektir."></textarea>
+            </div>
+        </section>
+
+        <section id="decrypt" class="content-section tab">
+            <h2>De-Şifreleme</h2>
+             <div class="input-group">
+                <label for="alphabetDecrypt">Alfabe:</label>
+                <select id="alphabetDecrypt" class="alphabet-select">
+                    <option value="tr">Türkçe (TR)</option>
+                    <option value="en">İngilizce (EN)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="cipherInputDecrypt">Şifreli Metin:</label>
+                <textarea id="cipherInputDecrypt" rows="4" placeholder="De-şifrelenecek metni buraya girin..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="keywordDecrypt">Anahtar Kelime:</label>
+                <input type="text" id="keywordDecrypt" placeholder="Sadece harf giriniz...">
+                 <p class="error-message" id="keywordDecryptError"></p>
+            </div>
+            <button id="btnDecrypt">De-Şifrele</button>
+            <div class="output-group">
+                <label for="plainOutputDecrypt">Düz Metin:</label>
+                <textarea id="plainOutputDecrypt" rows="4" readonly placeholder="Düz metin burada görünecektir."></textarea>
+            </div>
+        </section>
+
+        <section id="keylength" class="content-section tab">
+            <h2>Muhtemel Anahtar Uzunluğu Tahmini (Kasiski Testi)</h2>
+             <div class="input-group">
+                <label for="alphabetKeylength">Alfabe:</label>
+                <select id="alphabetKeylength" class="alphabet-select">
+                    <option value="tr">Türkçe (TR)</option>
+                    <option value="en">İngilizce (EN)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="keylengthInput">Şifreli Metin:</label>
+                <textarea id="keylengthInput" rows="6" placeholder="Anahtar uzunluğu tahmin edilecek metni buraya girin..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="maxKeyLength">Test Edilecek En Büyük Anahtar Uzunluğu:</label>
+                <input type="number" id="maxKeyLength" value="15" min="2" max="30">
+            </div>
+            <button id="btnFindKeyLength">Anahtar Uzunluğunu Bul</button>
+            <div class="output-group">
+                <h4>Analiz Sonuçları (Tekrarlayan Dizi Mesafelerinin Bölenleri):</h4>
+                <pre id="keylengthResults" class="info-text" style="text-align: left; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">Sonuçlar burada gösterilecek.</pre>
+                 <p><strong>En Çok Tekrar Eden Bölen (Muhtemel Anahtar Uzunluğu):</strong> <span id="probableKeyLength" class="highlight">Henüz hesaplanmadı</span></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="vigenere.js"></script>
+</body>
+</html>

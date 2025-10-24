@@ -51,8 +51,10 @@ header p {
 
 .choice-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* Ekran genişliğine göre esnek sütun sayısı (en az 280px genişliğinde) */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
+    margin-top: 40px; /* main'den kopyalandı, tutarlılık için */
 }
 
 .algorithm-card {
