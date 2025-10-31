@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permütasyon Resim Şifreleme</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Canvas'ların düzgün görünmesi için ek stil */
+        canvas {
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        body.dark canvas {
+            border-color: #555;
+        }
+        .canvas-container {
+            width: 100%;
+            text-align: center;
+        }
+        input[type="file"] {
+            padding: 10px;
+            background: #f4f7f9;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        body.dark input[type="file"] {
+            background-color: #2c2c2c;
+            border-color: #555;
+            color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Permütasyon Şifreleme (Resim)</h1>
+        <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
+    </header>
+
+    <nav class="tabs">
+        <button data-tab="encrypt" class="active">Şifreleme</button>
+        <button data-tab="decrypt">De-Şifreleme</button>
+    </nav>
+
+    <main>
+        <section id="encrypt" class="content-section tab active">
+            <h2>Resim Şifreleme</h2>
+            <div class="input-group">
+                <label for="imageInputEncrypt">Düz Resim Dosyası:</label>
+                <input type="file" id="imageInputEncrypt" accept="image/*">
+            </div>
+            
+            <div class="input-group">
+                <label for="keyEncrypt">Permütasyon Anahtarı:</label>
+                <input type="text" id="keyEncrypt" placeholder="Örn: 312 (1-9 arası, tekrarsız rakamlar)">
+                <p class="error-message" id="keyEncryptError"></p>
+            </div>
+            
+            <button id="btnEncrypt">Şifrele</button>
+            
+            <div class="output-group">
+                <h4>Giriş Resmi:</h4>
+                <div class="canvas-container">
+                    <canvas id="canvasInputEncrypt"></canvas>
+                </div>
+            </div>
+            
+            <div class="output-group">
+                <h4>Şifrelenmiş Resim:</h4>
+                <div class="canvas-container">
+                    <canvas id="canvasOutputEncrypt"></canvas>
+                </div>
+                <button id="btnDownloadEncrypt" style="display: none; background-color: #007bff; max-width: 250px; margin-top: 15px;">Şifreli Resmi İndir (.png)</button>
+            </div>
+        </section>
+
+        <section id="decrypt" class="content-section tab">
+            <h2>Resim De-Şifreleme</h2>
+            <div class="input-group">
+                <label for="imageInputDecrypt">Şifreli Resim Dosyası:</label>
+                <input type="file" id="imageInputDecrypt" accept="image/*">
+            </div>
+            
+            <div class="input-group">
+                <label for="keyDecrypt">Permütasyon Anahtarı:</label>
+                <input type="text" id="keyDecrypt" placeholder="Şifrelemede kullanılan anahtarın aynısı">
+                <p class="error-message" id="keyDecryptError"></p>
+            </div>
+            
+            <button id="btnDecrypt">De-Şifrele</button>
+            
+            <div class="output-group">
+                <h4>Giriş Resmi (Şifreli):</h4>
+                <div class="canvas-container">
+                    <canvas id="canvasInputDecrypt"></canvas>
+                </div>
+            </div>
+            
+            <div class="output-group"> <h4>Çözülmüş Resim:</h4>
+                <div class="canvas-container">
+                    <canvas id="canvasOutputDecrypt"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="permutasyon.js"></script>
+</body>
+</html>
