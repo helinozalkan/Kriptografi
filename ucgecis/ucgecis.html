@@ -3,145 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Üç-Geçiş Protokolü Simülasyonu</title>
+    <title>Üç-Geçiş Protokolü</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* --- Özel Stiller --- */
         .step-container {
             background: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 15px;
-            margin-top: 20px;
+            margin-top: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .step-title {
             font-weight: bold;
             color: #007bff;
-            margin-bottom: 10px;
             display: block;
+            margin-bottom: 5px;
         }
         .step-value {
             font-family: 'Courier New', monospace;
             background: #f8f9fa;
-            padding: 5px 10px;
+            padding: 2px 8px;
             border-radius: 4px;
             border: 1px solid #e9ecef;
-            display: inline-block;
-            margin-bottom: 5px;
+            font-weight: bold;
         }
-        .formula {
-            font-style: italic;
-            color: #6c757d;
-            font-size: 0.9em;
-            margin-left: 10px;
+        .formula { font-style: italic; color: #6c757d; font-size: 0.9em; margin-left: 5px; }
+
+        /* Animasyon Sahnesi */
+        .simulation-stage {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            margin-top: 20px;
+            position: relative;
+            height: 300px;
+            overflow: hidden;
         }
-        .error-box {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .actor { text-align: center; z-index: 2; width: 100px; }
+        .actor i { font-size: 3em; color: #555; margin-bottom: 10px; }
+        .actor-name { font-weight: bold; display: block; }
+        .actor-key { font-size: 0.8em; color: #007bff; background: #e9ecef; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block; }
+        
+        .message-box {
+            position: absolute;
+            left: 120px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #ffc107;
+            border: 2px solid #e0a800;
             padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 120px;
+            transition: left 1.5s ease-in-out, transform 0.5s;
+            z-index: 3;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .message-content { font-weight: bold; display: block; margin-bottom: 5px; }
+        .lock-container { display: flex; justify-content: center; gap: 5px; }
+        .lock { font-size: 1.2em; color: #dc3545; transition: opacity 0.5s; }
+        .lock.unlocked { color: #28a745; opacity: 0.5; }
+
+        .controls { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .controls button { width: auto; padding: 8px 20px; }
+        .step-info { margin-top: 20px; padding: 15px; border-left: 4px solid #007bff; background: #e7f1ff; border-radius: 4px; }
+
+        /* Dark Mode */
+        body.dark .step-container, body.dark .simulation-stage { background: #2c2c2c; border-color: #444; }
+        body.dark .step-value { background: #1e1e1e; border-color: #555; color: #f0f0f0; }
+        body.dark .formula { color: #bbb; }
+        body.dark .actor i { color: #ccc; }
+        body.dark .message-box { background-color: #bfa15f; border-color: #8f763b; color: #000; }
+        body.dark .step-info { background-color: #1e2a36; border-left-color: #00aaff; color: #fff; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 10px;
             border-radius: 6px;
-            margin-top: 15px;
-            display: none;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        body.dark .step-container {
-            background: #2c2c2c;
-            border-color: #444;
-        }
-        body.dark .step-value {
-            background: #1e1e1e;
-            border-color: #555;
-            color: #f0f0f0;
-        }
-        body.dark .formula {
-            color: #bbb;
-        }
-        body.dark .error-box {
-            background-color: #441c1f;
-            color: #f5c6cb;
-            border-color: #6c2e33;
-        }
+        .status-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     </style>
 </head>
 <body>
+
     <header>
-        <h1>Üç-Geçiş Protokolü (Three-Pass Protocol)</h1>
+        <h1>Üç-Geçiş Protokolü</h1>
         <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
     </header>
 
     <nav class="tabs">
         <button data-tab="simulation" class="active">Simülasyon</button>
+        <button data-tab="animation">Animasyon</button>
     </nav>
 
     <main>
+        <!-- 1. SEKME: SİMÜLASYON (METİN TABANLI) -->
         <section id="simulation" class="content-section tab active">
-            <h2>Protokol Parametreleri</h2>
+            <h2>Manuel Simülasyon</h2>
             <div class="input-group">
-                <label for="inputP">P Değeri (Mod): <small>(Asal sayı olmalı)</small></label>
-                <input type="number" id="inputP" placeholder="Örn: 10007">
+                <label for="sim_P">P (Mod Değeri - Asal Sayı):</label>
+                <input type="number" id="sim_P" placeholder="Örn: 10007" value="10007">
             </div>
             <div class="input-group">
-                <label for="inputA">A Değeri (Gönderici Anahtarı): <small>(P-1 ile aralarında asal olmalı)</small></label>
-                <input type="number" id="inputA" placeholder="Örn: 1234">
+                <label for="sim_A">A (Gönderici Anahtarı):</label>
+                <input type="number" id="sim_A" placeholder="Örn: 1235" value="1235">
             </div>
             <div class="input-group">
-                <label for="inputB">B Değeri (Alıcı Anahtarı): <small>(P-1 ile aralarında asal olmalı)</small></label>
-                <input type="number" id="inputB" placeholder="Örn: 5678">
+                <label for="sim_B">B (Alıcı Anahtarı):</label>
+                <input type="number" id="sim_B" placeholder="Örn: 5679" value="5679">
             </div>
             <div class="input-group">
-                <label for="inputK">K Değeri (Mesaj): <small>(Mesaj P'den küçük olmalı)</small></label>
-                <input type="number" id="inputK" placeholder="Örn: 999">
+                <label for="sim_K">K (Mesaj):</label>
+                <input type="number" id="sim_K" placeholder="Örn: 999" value="999">
             </div>
             
-            <button id="btnSimulate">Simülasyonu Başlat</button>
+            <button id="btnRunSimulation">Hesapla</button>
+            <div id="sim_ValidationArea"></div>
 
-            <div id="errorBox" class="error-box"></div>
-
-            <div id="resultsArea" class="hidden">
-                <h3>Simülasyon Adımları</h3>
-                
+            <div id="simResults" class="hidden">
+                <h3>Sonuçlar</h3>
                 <div class="step-container">
-                    <span class="step-title">1. Anahtar Terslerinin Hesaplanması</span>
-                    <div>
-                        A'nın Tersi (A⁻¹): <span id="resInvA" class="step-value">-</span> 
-                        <span class="formula">(A * A⁻¹) ≡ 1 (mod P-1)</span>
+                    <span class="step-title">1. Anahtar Tersleri</span>
+                    <div>A⁻¹: <span id="res_InvA" class="step-value">-</span></div>
+                    <div>B⁻¹: <span id="res_InvB" class="step-value">-</span></div>
+                </div>
+                <div class="step-container">
+                    <span class="step-title">2. Şifreleme Adımları</span>
+                    <div>C1 (Kᴬ mod P): <span id="res_C1" class="step-value">-</span></div>
+                    <div>C2 (C1ᴮ mod P): <span id="res_C2" class="step-value">-</span></div>
+                    <div>C3 (C2ᴬ⁻¹ mod P): <span id="res_C3" class="step-value">-</span></div>
+                </div>
+                <div class="step-container">
+                    <span class="step-title">3. Sonuç</span>
+                    <div>Çözülen Mesaj: <span id="res_Final" class="step-value">-</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. SEKME: ANİMASYON (GÖRSEL) -->
+        <section id="animation" class="content-section tab">
+            <h2>Görsel Animasyon</h2>
+            <div class="input-group">
+                <label for="anim_P">P (Mod Değeri - Asal Sayı):</label>
+                <input type="number" id="anim_P" placeholder="Örn: 10007" value="10007">
+            </div>
+            <div class="input-group">
+                <label for="anim_A">A (Gönderici Anahtarı):</label>
+                <input type="number" id="anim_A" placeholder="Örn: 1235" value="1235">
+            </div>
+            <div class="input-group">
+                <label for="anim_B">B (Alıcı Anahtarı):</label>
+                <input type="number" id="anim_B" placeholder="Örn: 5679" value="5679">
+            </div>
+            <div class="input-group">
+                <label for="anim_K">K (Mesaj):</label>
+                <input type="number" id="anim_K" placeholder="Örn: 999" value="999">
+            </div>
+
+            <button id="btnRunAnimation">Animasyonu Başlat</button>
+            <div id="anim_ValidationArea"></div>
+
+            <div id="animationContainer" class="hidden">
+                <div class="simulation-stage">
+                    <div class="actor">
+                        <i class="fas fa-user"></i>
+                        <span class="actor-name">Gönderici</span>
+                        <span class="actor-key">A</span>
                     </div>
-                    <div>
-                        B'nin Tersi (B⁻¹): <span id="resInvB" class="step-value">-</span>
-                        <span class="formula">(B * B⁻¹) ≡ 1 (mod P-1)</span>
+                    
+                    <div class="message-box" id="messageBox">
+                        <span class="message-content" id="msgValue">K: ?</span>
+                        <div class="lock-container" id="lockContainer"></div>
+                    </div>
+
+                    <div class="actor">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="actor-name">Alıcı</span>
+                        <span class="actor-key">B</span>
                     </div>
                 </div>
 
-                <div class="step-container">
-                    <span class="step-title">2. Gönderici Mesajı Kilitler (1. Geçiş)</span>
-                    <div>
-                        Şifreli Mesaj (C1): <span id="resC1" class="step-value">-</span>
-                        <span class="formula">C1 ≡ Kᴬ (mod P)</span>
-                    </div>
+                <div class="step-info" id="stepInfoBox">
+                    <strong>Durum:</strong> Başlatılmaya hazır.
                 </div>
 
-                <div class="step-container">
-                    <span class="step-title">3. Alıcı Mesajı Kilitler (2. Geçiş)</span>
-                    <div>
-                        Şifreli Mesaj (C2): <span id="resC2" class="step-value">-</span>
-                        <span class="formula">C2 ≡ C1ᴮ (mod P)</span>
-                    </div>
-                </div>
-
-                <div class="step-container">
-                    <span class="step-title">4. Gönderici Kendi Kilidini Açar (3. Geçiş)</span>
-                    <div>
-                        Yarı Çözülmüş Mesaj (C3): <span id="resC3" class="step-value">-</span>
-                        <span class="formula">C3 ≡ C2ᴬ⁻¹ (mod P)</span>
-                    </div>
-                </div>
-
-                <div class="step-container">
-                    <span class="step-title">5. Alıcı Kendi Kilidini Açar (Sonuç)</span>
-                    <div>
-                        Çözülmüş Mesaj (Sonuç): <span id="resFinal" class="step-value">-</span>
-                        <span class="formula">Sonuç ≡ C3ᴮ⁻¹ (mod P)</span>
-                    </div>
+                <div class="controls">
+                    <button id="btnNextStep" disabled>İleri <i class="fas fa-arrow-right"></i></button>
+                    <button id="btnReset" class="btn-secondary">Sıfırla</button>
                 </div>
             </div>
         </section>
