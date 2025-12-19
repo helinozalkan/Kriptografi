@@ -1,11 +1,14 @@
 /**
  * BYM 468 - Kriptografi Dersi
  * Üç-Geçiş Protokolü (Three-Pass Protocol) Simülasyonu
+
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    
 
+    
     function gcd(a, b) {
         a = BigInt(a);
         b = BigInt(b);
@@ -16,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return a;
     }
 
+    
     function modPow(base, exp, mod) {
         let res = 1n;
         base = BigInt(base) % BigInt(mod);
@@ -29,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return res;
     }
 
-
+    
     function modInverse(a, m) {
         let m0 = BigInt(m);
         let y = 0n, x = 1n;
@@ -39,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (m_bi === 1n) return 0n;
 
         while (a_bi > 1n) {
+            if (m_bi === 0n) break;
             let q = a_bi / m_bi;
             let t = m_bi;
             m_bi = a_bi % m_bi;
@@ -51,22 +56,44 @@ document.addEventListener('DOMContentLoaded', () => {
         return x;
     }
 
- 
+   
     function isPrime(n) {
         let num = BigInt(n);
-        if (num <= 1n) return false;
-        if (num <= 3n) return true;
+        if (num < 2n) return false;
+        if (num === 2n || num === 3n) return true;
         if (num % 2n === 0n || num % 3n === 0n) return false;
-        for (let i = 5n; i * i <= num; i += 6n) {
-            if (num % i === 0n || num % (i + 2n) === 0n) return false;
+
+        let d = num - 1n;
+        let s = 0n;
+        while (d % 2n === 0n) {
+            d /= 2n;
+            s++;
+        }
+
+        
+        const witnesses = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n];
+        
+        for (let a of witnesses) {
+            if (num <= a) break;
+            let x = modPow(a, d, num);
+            if (x === 1n || x === num - 1n) continue;
+            
+            let composite = true;
+            for (let r = 1n; r < s; r++) {
+                x = (x * x) % num;
+                if (x === num - 1n) {
+                    composite = false;
+                    break;
+                }
+            }
+            if (composite) return false;
         }
         return true;
     }
 
-   
-    let simData = {}; /
+    
+    let simData = {}; 
     let currentStep = 0; 
-
 
     const messageBox = document.getElementById('messageBox');
     const msgValue = document.getElementById('msgValue');
@@ -77,19 +104,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     function calculateProtocolData() {
-     
         const isSimTab = document.getElementById('tabSimulation').classList.contains('active');
         const prefix = isSimTab ? "sim_" : "anim_";
         
         const valArea = document.getElementById(prefix + 'ValidationArea');
-        valArea.innerHTML = ''; 
+        valArea.innerHTML = '';
 
         const pVal = document.getElementById(prefix + 'P').value;
         const aVal = document.getElementById(prefix + 'A').value;
         const bVal = document.getElementById(prefix + 'B').value;
         const kVal = document.getElementById(prefix + 'K').value;
 
-       
         if (!pVal || !aVal || !bVal || !kVal) {
             showValidationError(valArea, "Lütfen tüm alanları doldurunuz.");
             return null;
@@ -100,26 +125,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const A = BigInt(aVal);
             const B = BigInt(bVal);
             const K = BigInt(kVal);
-            const phi = P - 1n; 
+            const phi = P - 1n;
 
             let errors = [];
 
-     
             if (!isPrime(P)) {
                 errors.push(`Hata: P mod değeri (${P}) bir asal sayı değildir.`);
             }
 
-         
             if (K >= P) {
                 errors.push(`Hata: K mesaj değeri (${K}), P mod değerinden (${P}) küçük olmalıdır.`);
             }
 
-            if (gcd(A, phi) !== 1n) {
-                errors.push(`Hata: A anahtarı (${A}), P-1 (${phi}) değeri ile aralarında asal değildir. (EBOB != 1)`);
+            const gcdA = gcd(A, phi);
+            if (gcdA !== 1n) {
+                errors.push(`Hata: A anahtarı (${A}), P-1 (${phi}) ile aralarında asal değildir. (EBOB: ${gcdA})`);
             }
 
-            if (gcd(B, phi) !== 1n) {
-                errors.push(`Hata: B anahtarı (${B}), P-1 (${phi}) değeri ile aralarında asal değildir. (EBOB != 1)`);
+            const gcdB = gcd(B, phi);
+            if (gcdB !== 1n) {
+                errors.push(`Hata: B anahtarı (${B}), P-1 (${phi}) ile aralarında asal değildir. (EBOB: ${gcdB})`);
             }
 
             if (errors.length > 0) {
@@ -127,15 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return null;
             }
 
-           
             const A_inv = modInverse(A, phi);
             const B_inv = modInverse(B, phi);
             
-           
-            const C1 = modPow(K, A, P);     
+            const C1 = modPow(K, A, P);      
             const C2 = modPow(C1, B, P);     
             const C3 = modPow(C2, A_inv, P); 
-            const Final = modPow(C3, B_inv, P); 
+            const Final = modPow(C3, B_inv, P);
 
             showValidationSuccess(valArea, "Değerler protokol kurallarına uygun. Hesaplama tamamlandı.");
 
@@ -147,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    
     document.getElementById('btnRunSimulation').addEventListener('click', () => {
         const data = calculateProtocolData();
         const resultsDiv = document.getElementById('simResults');
@@ -156,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
- 
         document.getElementById('txtInvA').textContent = data.A_inv.toString();
         document.getElementById('txtInvB').textContent = data.B_inv.toString();
         document.getElementById('txtC1').textContent = data.C1.toString();
@@ -166,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalSpan = document.getElementById('txtFinal');
         finalSpan.textContent = data.Final.toString();
 
-   
         if (data.Final === data.K) {
             finalSpan.innerHTML += ' <strong style="color:green">✅ (Başarılı)</strong>';
         } else {
@@ -176,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsDiv.classList.remove('hidden');
     });
 
+    // === SEKME 2: ANİMASYON ===
     document.getElementById('btnRunAnimation').addEventListener('click', () => {
         const data = calculateProtocolData();
         if (!data) {
@@ -191,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetAnimation() {
         currentStep = 0;
         btnNextStep.disabled = false;
-        
         
         messageBox.style.left = '120px'; 
         messageBox.style.backgroundColor = '';
@@ -215,14 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switch(step) {
             case 1: 
-                addLockIcon('A', '#dc3545'); // Kırmızı kilit
+                addLockIcon('A', '#dc3545'); 
                 msgValue.textContent = `C1: ${simData.C1}`;
                 updateStepInfo(1, `Gönderici mesajı A anahtarıyla kilitledi. Değer: ${simData.C1}. Alıcıya gönderiliyor...`);
                 messageBox.style.left = posReceiver;
                 break;
 
             case 2: 
-                addLockIcon('B', '#007bff'); // Mavi kilit
+                addLockIcon('B', '#007bff'); 
                 msgValue.textContent = `C2: ${simData.C2}`;
                 updateStepInfo(2, `Alıcı mesajı B anahtarıyla da kilitledi. Değer: ${simData.C2}. Göndericiye geri dönüyor...`);
                 messageBox.style.left = posSender;
@@ -249,7 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
         }
     }
-
 
     function addLockIcon(id, color) {
         const lock = document.createElement('i');
@@ -280,7 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
         element.innerHTML = `<div class="status-badge status-success">${msg}</div>`;
     }
 
-    
     document.querySelectorAll('.tabs button').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
@@ -292,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    
     const modeToggle = document.getElementById('modeToggle');
     if (modeToggle) {
         const savedMode = localStorage.getItem('mode') || 'light';
