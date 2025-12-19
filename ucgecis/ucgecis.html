@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- Özel Stiller --- */
+
         .step-container {
             background: #fff;
             border: 1px solid #ddd;
@@ -20,7 +20,9 @@
             font-weight: bold;
             color: #007bff;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
         }
         .step-value {
             font-family: 'Courier New', monospace;
@@ -29,10 +31,13 @@
             border-radius: 4px;
             border: 1px solid #e9ecef;
             font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+            word-break: break-all;
         }
         .formula { font-style: italic; color: #6c757d; font-size: 0.9em; margin-left: 5px; }
 
-        /* Animasyon Sahnesi */
+      
         .simulation-stage {
             display: flex;
             justify-content: space-between;
@@ -75,7 +80,7 @@
         .controls button { width: auto; padding: 8px 20px; }
         .step-info { margin-top: 20px; padding: 15px; border-left: 4px solid #007bff; background: #e7f1ff; border-radius: 4px; }
 
-        /* Dark Mode */
+     
         body.dark .step-container, body.dark .simulation-stage { background: #2c2c2c; border-color: #444; }
         body.dark .step-value { background: #1e1e1e; border-color: #555; color: #f0f0f0; }
         body.dark .formula { color: #bbb; }
@@ -98,18 +103,18 @@
 <body>
 
     <header>
-        <h1>Üç-Geçiş Protokolü</h1>
+        <h1>Üç-Geçiş Protokolü (Three-Pass Protocol)</h1>
         <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
     </header>
 
     <nav class="tabs">
-        <button data-tab="simulation" class="active">Simülasyon</button>
-        <button data-tab="animation">Animasyon</button>
+        <button data-tab="tabSimulation" class="active">Simülasyon</button>
+        <button data-tab="tabAnimation">Animasyon</button>
     </nav>
 
     <main>
-        <!-- 1. SEKME: SİMÜLASYON (METİN TABANLI) -->
-        <section id="simulation" class="content-section tab active">
+
+        <section id="tabSimulation" class="content-section tab active">
             <h2>Manuel Simülasyon</h2>
             <div class="input-group">
                 <label for="sim_P">P (Mod Değeri - Asal Sayı):</label>
@@ -128,31 +133,50 @@
                 <input type="number" id="sim_K" placeholder="Örn: 999" value="999">
             </div>
             
-            <button id="btnRunSimulation">Hesapla</button>
+            <button id="btnRunSimulation">Hesapla ve Listele</button>
             <div id="sim_ValidationArea"></div>
 
             <div id="simResults" class="hidden">
-                <h3>Sonuçlar</h3>
+                <h3>Protokol Adımları ve Değerler</h3>
+                
                 <div class="step-container">
                     <span class="step-title">1. Anahtar Tersleri</span>
-                    <div>A⁻¹: <span id="res_InvA" class="step-value">-</span></div>
-                    <div>B⁻¹: <span id="res_InvB" class="step-value">-</span></div>
+                    <div>A anahtarının tersi (A⁻¹): <span id="txtInvA" class="step-value">-</span> <span class="formula">(A * A⁻¹) ≡ 1 mod (P-1)</span></div>
+                    <div>B anahtarının tersi (B⁻¹): <span id="txtInvB" class="step-value">-</span> <span class="formula">(B * B⁻¹) ≡ 1 mod (P-1)</span></div>
                 </div>
+
                 <div class="step-container">
-                    <span class="step-title">2. Şifreleme Adımları</span>
-                    <div>C1 (Kᴬ mod P): <span id="res_C1" class="step-value">-</span></div>
-                    <div>C2 (C1ᴮ mod P): <span id="res_C2" class="step-value">-</span></div>
-                    <div>C3 (C2ᴬ⁻¹ mod P): <span id="res_C3" class="step-value">-</span></div>
+                    <span class="step-title">2. Şifreleme Süreci (Üç-Geçiş)</span>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <strong>1. Geçiş:</strong> Gönderici K mesajını A anahtarı ile kilitledikten sonraki elde edilen değer (C1):<br>
+                        <span id="txtC1" class="step-value">-</span> <span class="formula">C1 ≡ Kᴬ mod P</span>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <strong>2. Geçiş:</strong> Alıcı aldığı mesajı B anahtarı ile kilitledikten sonraki elde edilen değer (C2):<br>
+                        <span id="txtC2" class="step-value">-</span> <span class="formula">C2 ≡ C1ᴮ mod P</span>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <strong>3. Geçiş:</strong> Gönderici aldığı mesajı A⁻¹ anahtar tersi ile açtıktan sonra elde edilen değer (C3):<br>
+                        <span id="txtC3" class="step-value">-</span> <span class="formula">C3 ≡ C2^(A⁻¹) mod P</span>
+                    </div>
                 </div>
+
                 <div class="step-container">
-                    <span class="step-title">3. Sonuç</span>
-                    <div>Çözülen Mesaj: <span id="res_Final" class="step-value">-</span></div>
+                    <span class="step-title">3. Sonuç (De-şifreleme)</span>
+                    
+                    <div>
+                        Alıcı aldığı mesajı B⁻¹ anahtar tersi ile açtıktan sonra elde edilen değer (Sonuç):<br>
+                        <span id="txtFinal" class="step-value">-</span> <span class="formula">Sonuç ≡ C3^(B⁻¹) mod P</span>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 2. SEKME: ANİMASYON (GÖRSEL) -->
-        <section id="animation" class="content-section tab">
+
+        <section id="tabAnimation" class="content-section tab">
             <h2>Görsel Animasyon</h2>
             <div class="input-group">
                 <label for="anim_P">P (Mod Değeri - Asal Sayı):</label>
@@ -171,7 +195,7 @@
                 <input type="number" id="anim_K" placeholder="Örn: 999" value="999">
             </div>
 
-            <button id="btnRunAnimation">Animasyonu Başlat</button>
+            <button id="btnRunAnimation">Animasyonu Hazırla</button>
             <div id="anim_ValidationArea"></div>
 
             <div id="animationContainer" class="hidden">
