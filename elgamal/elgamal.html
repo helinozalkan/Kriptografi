@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El-Gamal Şifreleme Algoritması</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Ortak Stiller --- */
+        .step-container {
+            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .step-title { font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .step-value { font-family: 'Courier New', monospace; background: #f8f9fa; padding: 2px 8px; border-radius: 4px; border: 1px solid #e9ecef; font-weight: bold; word-break: break-all; }
+        .formula { font-style: italic; color: #6c757d; font-size: 0.9em; margin-left: 5px; }
+
+        /* Animasyon Sahnesi */
+        .simulation-stage {
+            display: flex; justify-content: space-between; align-items: center; padding: 40px; background-color: #f8f9fa; border-radius: 12px; border: 1px solid #dee2e6; margin-top: 20px; position: relative; height: 350px; overflow: hidden;
+        }
+        .actor { text-align: center; z-index: 2; width: 140px; }
+        .actor i { font-size: 3.5em; color: #555; margin-bottom: 10px; }
+        .actor-name { font-weight: bold; display: block; }
+        
+        /* Anahtar ve Mesaj Kutuları */
+        .key-badge { font-size: 0.75em; padding: 4px; border-radius: 4px; margin-top: 5px; display: block; margin-bottom: 2px; }
+        .public-key { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .private-key { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .calc-value { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+        .message-box {
+            position: absolute; left: 140px; top: 50%; transform: translateY(-50%);
+            background-color: #28a745; border: 2px solid #1e7e34; color: white;
+            padding: 10px; border-radius: 8px; text-align: center; min-width: 100px;
+            transition: all 1.5s ease-in-out; z-index: 3; opacity: 0;
+        }
+        
+        .flying-obj {
+            position: absolute; font-size: 1.2em; color: #007bff; transition: all 1.5s ease-in-out; z-index: 4; opacity: 0;
+            background: white; padding: 5px; border-radius: 5px; border: 1px solid #ccc;
+        }
+
+        .controls { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .controls button { width: auto; padding: 8px 20px; }
+        .step-info { margin-top: 20px; padding: 15px; border-left: 4px solid #007bff; background: #e7f1ff; border-radius: 4px; }
+        
+        .status-badge { display: inline-block; padding: 10px; border-radius: 6px; margin-top: 10px; width: 100%; box-sizing: border-box; }
+        .status-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        /* Input Bar */
+        .input-bar { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .input-bar h2 { margin-top: 0; font-size: 1.2em; color: #333; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 15px; }
+
+        ::placeholder { color: #aaa; opacity: 0.7; font-style: italic; }
+
+        /* Dark Mode */
+        body.dark .step-container, body.dark .simulation-stage { background: #2c2c2c; border-color: #444; }
+        body.dark .step-value { background: #1e1e1e; border-color: #555; color: #f0f0f0; }
+        body.dark .formula { color: #bbb; }
+        body.dark .actor i { color: #ccc; }
+        body.dark .message-box { background-color: #1e7e34; border-color: #28a745; color: #fff; }
+        body.dark .step-info { background-color: #1e2a36; border-left-color: #00aaff; color: #fff; }
+        body.dark .input-bar { background-color: #2c2c2c; border-color: #444; }
+        body.dark .input-bar h2 { color: #f0f0f0; border-bottom-color: #555; }
+        body.dark .flying-obj { background: #333; border-color: #555; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>El-Gamal Şifreleme Algoritması</h1>
+        <button id="modeToggle" class="mode-toggle">🌙 Dark Mode</button>
+    </header>
+
+    <nav class="tabs">
+        <button data-tab="tabSimulation" class="active">Simülasyon (Detaylı)</button>
+        <button data-tab="tabAnimation">Animasyon (Görsel)</button>
+    </nav>
+
+    <main>
+        <!-- 1. SEKME: SİMÜLASYON -->
+        <section id="tabSimulation" class="content-section tab active">
+            <div class="input-bar">
+                <h2>El-Gamal Parametreleri (Simülasyon)</h2>
+                <div class="input-group">
+                    <label for="sim_P">P (Asal Sayı):</label>
+                    <input type="number" id="sim_P" placeholder="örn: 10007">
+                </div>
+                <div class="input-group">
+                    <label for="sim_Alpha">α (Alpha - Üreteç): <small>(P'nin ilkel kökü olmalı)</small></label>
+                    <input type="number" id="sim_Alpha" placeholder="örn: 5">
+                </div>
+                <div class="input-group">
+                    <label for="sim_B">b (Alıcı Gizli Anahtarı): <small>(1 < b < P-1)</small></label>
+                    <input type="number" id="sim_B" placeholder="örn: 123">
+                </div>
+                <div class="input-group">
+                    <label for="sim_K">k (Gönderici Rastgele Sayı): <small>(1 < k < P-1)</small></label>
+                    <input type="number" id="sim_K" placeholder="örn: 456">
+                </div>
+                <div class="input-group">
+                    <label for="sim_M">m (Mesaj): <small>(m < P)</small></label>
+                    <input type="number" id="sim_M" placeholder="örn: 8888">
+                </div>
+                
+                <button id="btnRunStatic" style="width: 100%; margin-top: 10px;">Hesapla ve Listele</button>
+                <div id="sim_ValidationArea" style="margin-top: 15px;"></div>
+            </div>
+
+            <div id="simResults" class="hidden">
+                <h3>El-Gamal İşlem Adımları</h3>
+                
+                <div class="step-container">
+                    <span class="step-title">1. Alıcı (Bob) Anahtar Üretimi</span>
+                    <div>Açık Anahtar (β): <span id="txtBeta" class="step-value">-</span> <span class="formula">β ≡ α^b mod P</span></div>
+                    <div>Yayınlanan Açık Anahtar Üçlüsü: <span id="txtPublicKey" class="step-value">-</span> <span class="formula">(P, α, β)</span></div>
+                </div>
+
+                <div class="step-container">
+                    <span class="step-title">2. Gönderici (Alice) Şifreleme</span>
+                    <div>C1: <span id="txtC1" class="step-value">-</span> <span class="formula">C1 ≡ α^k mod P</span></div>
+                    <div>C2: <span id="txtC2" class="step-value">-</span> <span class="formula">C2 ≡ m * β^k mod P</span></div>
+                    <div>Şifreli Metin İkilisi: <span id="txtCipherPair" class="step-value">-</span> <span class="formula">(C1, C2)</span></div>
+                </div>
+
+                <div class="step-container">
+                    <span class="step-title">3. Alıcı (Bob) De-Şifreleme</span>
+                    <div>Ortak Sır (S): <span id="txtSharedSecret" class="step-value">-</span> <span class="formula">S ≡ C1^b mod P</span></div>
+                    <div>S'nin Tersi (S⁻¹): <span id="txtSInverse" class="step-value">-</span> <span class="formula">S * S⁻¹ ≡ 1 mod P</span></div>
+                    <div>Çözülen Mesaj (m'): <span id="txtDecrypted" class="step-value">-</span> <span class="formula">m' ≡ C2 * S⁻¹ mod P</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. SEKME: ANİMASYON -->
+        <section id="tabAnimation" class="content-section tab">
+            <div class="input-bar">
+                <h2>El-Gamal Parametreleri (Animasyon)</h2>
+                <div class="input-group">
+                    <label for="anim_P">P (Asal Sayı):</label>
+                    <input type="number" id="anim_P" placeholder="örn: 10007">
+                </div>
+                <div class="input-group">
+                    <label for="anim_Alpha">α (Alpha - Üreteç):</label>
+                    <input type="number" id="anim_Alpha" placeholder="örn: 5">
+                </div>
+                <div class="input-group">
+                    <label for="anim_B">b (Alıcı Gizli Anahtarı):</label>
+                    <input type="number" id="anim_B" placeholder="örn: 123">
+                </div>
+                <div class="input-group">
+                    <label for="anim_K">k (Gönderici Rastgele Sayı):</label>
+                    <input type="number" id="anim_K" placeholder="örn: 456">
+                </div>
+                <div class="input-group">
+                    <label for="anim_M">m (Mesaj):</label>
+                    <input type="number" id="anim_M" placeholder="örn: 8888">
+                </div>
+
+                <button id="btnRunAnimation" style="width: 100%; margin-top: 10px;">Animasyonu Hazırla</button>
+                <div id="anim_ValidationArea" style="margin-top: 15px;"></div>
+            </div>
+
+            <div id="animationContainer" class="hidden">
+                <div class="simulation-stage">
+                    <!-- GÖNDERİCİ (ALICE) -->
+                    <div class="actor">
+                        <i class="fas fa-user"></i>
+                        <span class="actor-name">Gönderici (Alice)</span>
+                        <div id="aliceArea"></div>
+                    </div>
+                    
+                    <!-- UÇAN OBJELER (Anahtarlar ve Mesaj) -->
+                    <div id="flyingObj" class="flying-obj"></div>
+
+                    <!-- ALICI (BOB) -->
+                    <div class="actor">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="actor-name">Alıcı (Bob)</span>
+                        <div id="bobArea"></div>
+                    </div>
+                </div>
+
+                <div class="step-info" id="stepInfoBox">
+                    <strong>Durum:</strong> Başlatılmaya hazır.
+                </div>
+
+                <div class="controls">
+                    <button id="btnNextStep" disabled>İleri <i class="fas fa-arrow-right"></i></button>
+                    <button id="btnReset" class="btn-secondary">Sıfırla</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="elgamal.js"></script>
+</body>
+</html>
